@@ -11,9 +11,12 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
-        List<>
         RefactoringEngine engine = new RefactoringEngine();
-        RefactoringResult result = engine.run("https://github.com/cucumber/cucumber-jvm.git", "4505c156b6267c1b760deec570ddbfe047b42aa9", "cuke4duke.internal.java.JavaLanguage", 36);
+        String repositoryUrl = "https://github.com/cucumber/cucumber-jvm.git";
+        String mergeCommit = "4505c156b6267c1b760deec570ddbfe047b42aa9";
+        String className = "cuke4duke.internal.java.JavaLanguage";
+        int line = 36;
+        RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , line);
 
         System.out.println("Is refactoring: " + result.isRefactoring());
     }

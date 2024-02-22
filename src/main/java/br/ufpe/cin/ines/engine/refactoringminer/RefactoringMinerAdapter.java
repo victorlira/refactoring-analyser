@@ -1,5 +1,6 @@
-package br.ufpe.cin.ines.engine;
+package br.ufpe.cin.ines.engine.refactoringminer;
 
+import br.ufpe.cin.ines.engine.RefactoringFinder;
 import br.ufpe.cin.ines.model.RefactoringParams;
 import br.ufpe.cin.ines.model.RefactoringResult;
 import gr.uom.java.xmi.diff.CodeRange;
@@ -26,7 +27,7 @@ public class RefactoringMinerAdapter extends RefactoringFinder {
     }
 
     @Override
-    RefactoringResult execute() {
+    public RefactoringResult execute() {
         RefactoringResult result = new RefactoringResult();
 
         String classFilePath = this.getParams().getClassname().replaceAll("\\.", "/");

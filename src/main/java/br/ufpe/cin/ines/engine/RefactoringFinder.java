@@ -11,7 +11,7 @@ public abstract class RefactoringFinder {
         this.params = params;
     }
 
-    abstract RefactoringResult execute();
+    public abstract RefactoringResult execute();
 
     public RefactoringParams getParams() {
         return params;

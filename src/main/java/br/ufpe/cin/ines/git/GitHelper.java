@@ -61,6 +61,10 @@ public class GitHelper {
         this.executeCommand("git", "clone", this.repositoryUrl, this.localPath.getFileName().toString());
     }
 
+    public void checkoutCommit(String commit) {
+        this.executeCommand("git", "checkout", commit);
+    }
+
     private String executeCommand(String ... command) {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(command);

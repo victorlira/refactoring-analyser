@@ -1,5 +1,6 @@
-package br.ufpe.cin.ines.engine;
+package br.ufpe.cin.ines.engine.refdiff;
 
+import br.ufpe.cin.ines.engine.RefactoringFinder;
 import br.ufpe.cin.ines.git.GitHelper;
 import br.ufpe.cin.ines.model.RefactoringParams;
 import br.ufpe.cin.ines.model.RefactoringResult;
@@ -18,7 +19,7 @@ public class RefDiffAdapter extends RefactoringFinder {
     }
 
     @Override
-    RefactoringResult execute() {
+    public RefactoringResult execute() {
         File tempFolder = new File(GitHelper.BASE_FOLDER);
         JavaPlugin javaPlugin = new JavaPlugin(tempFolder);
         RefDiff refDiffJava = new RefDiff(javaPlugin);

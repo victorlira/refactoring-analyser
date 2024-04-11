@@ -2,6 +2,7 @@ package br.ufpe.cin.ines.engine;
 
 import br.ufpe.cin.ines.diff.LineNumberFinder;
 import br.ufpe.cin.ines.engine.refactoringminer.RefactoringMinerAdapter;
+import br.ufpe.cin.ines.engine.refdiff.RefDiffAdapter;
 import br.ufpe.cin.ines.git.GitHelper;
 import br.ufpe.cin.ines.model.RefactoringParams;
 import br.ufpe.cin.ines.model.RefactoringResult;
@@ -27,10 +28,11 @@ public class RefactoringEngine {
         String baseCommit = git.getBaseCommit(leftCommit, rightCommit);
 
         RefactoringFinder[] finders =  {
-                //new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, leftLineNumber)),
-                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, rightLineNumber))/*,
-                new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, line)),
-                new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, line))*/
+                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), mergeCommit, mergeCommit, className, leftLineNumber)),
+                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, leftLineNumber)),
+                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, rightLineNumber)),
+                //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, line)),
+                //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, line))
         };
 
         return this.seekRefactorings(finders);

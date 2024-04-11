@@ -36,20 +36,38 @@ public class RefactoringMinerAdapter extends RefactoringFinder {
             GitService gitService = new GitServiceImpl();
             try (Repository repo = gitService.openRepository(this.getParams().getLocalPath().toString())) {
                 GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
-                miner.detectBetweenCommits(repo, this.getParams().getInitialCommit(), this.getParams().getFinalCommit(), new RefactoringHandler() {
-                    @Override
-                    public void handle(String commitId, List<Refactoring> refactorings) {
-                        refactorings
-                                .stream()
-                                .filter(ref -> ref.rightSide().stream().anyMatch(i -> i.getFilePath().contains(classFilePath)))
-                                .flatMap(ref -> ref.rightSide().stream())
-                                .forEach(ref -> {
-                                    if (getParams().getLine() >= ref.getStartLine() && getParams().getLine() <= ref.getEndLine()) {
-                                        result.setRefactoring(true);
-                                    }
-                                });
-                    }
-                });
+
+                if (this.getParams().getInitialCommit().equals(this.getParams().getFinalCommit())) {
+                    miner.detectAtCommit(repo, this.getParams().getFinalCommit(), new RefactoringHandler() {
+                        @Override
+                        public void handle(String commitId, List<Refactoring> refactorings) {
+                            refactorings
+                                    .stream()
+                                    .filter(ref -> ref.rightSide().stream().anyMatch(i -> i.getFilePath().contains(classFilePath)))
+                                    .flatMap(ref -> ref.rightSide().stream())
+                                    .forEach(ref -> {
+                                        if (getParams().getLine() >= ref.getStartLine() && getParams().getLine() <= ref.getEndLine()) {
+                                            result.setRefactoring(true);
+                                        }
+                                    });
+                        }
+                    });
+                } else {
+                    miner.detectBetweenCommits(repo, this.getParams().getInitialCommit(), this.getParams().getFinalCommit(), new RefactoringHandler() {
+                        @Override
+                        public void handle(String commitId, List<Refactoring> refactorings) {
+                            refactorings
+                                    .stream()
+                                    .filter(ref -> ref.rightSide().stream().anyMatch(i -> i.getFilePath().contains(classFilePath)))
+                                    .flatMap(ref -> ref.rightSide().stream())
+                                    .forEach(ref -> {
+                                        if (getParams().getLine() >= ref.getStartLine() && getParams().getLine() <= ref.getEndLine()) {
+                                            result.setRefactoring(true);
+                                        }
+                                    });
+                        }
+                    });
+                }
             }
         } catch (Exception ex) { ex.printStackTrace(); }
 

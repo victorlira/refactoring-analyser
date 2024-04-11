@@ -2,7 +2,7 @@ package br.ufpe.cin.ines.diff;
 
 public class StringMatch
 {
-    private static final double MATCH_PERCENTAGE = 0.95;
+    private static final double MATCH_PERCENTAGE = 0.65;
 
     public static boolean isMatch(String s1, String s2) {
         return jaroWinkler(s1, s2) >= MATCH_PERCENTAGE;

@@ -24,23 +24,30 @@ public class LineNumberFinder {
         int line = 0;
 
         String javaFile = this.getJavaFileName(fileName);
-        String[] originalFileContent = this.getJavaClassContent(originalCommit, javaFile);
+        String[] originalFileContent = this.getJavaClassContent(originalCommit, javaFile, fileName);
         String originalLineContent = originalFileContent[originalLineNumber - 1];
 
-        String[] searchingFileContent = this.getJavaClassContent(searchingCommit, javaFile);
+        String[] searchingFileContent = this.getJavaClassContent(searchingCommit, javaFile, fileName);
         return this.findLine(searchingFileContent, originalLineContent, originalLineNumber);
     }
 
     private int findLine(String[] fileContent, String lineContent, int originalLineNumber) {
+        int result = -1;
+
         List<Integer> lines = new ArrayList<>();
 
+        lineContent = lineContent.trim();
         for (int i = 1; i <= fileContent.length; i++) {
-            if (StringMatch.isMatch(fileContent[i - 1], lineContent)) {
+            if (StringMatch.isMatch(fileContent[i - 1].trim(), lineContent)) {
                 lines.add(i);
             }
         }
 
-        return this.findNearestNumber(lines, originalLineNumber);
+        if (!lines.isEmpty()) {
+            result = this.findNearestNumber(lines, originalLineNumber);
+        }
+
+        return result;
     }
 
     public int findNearestNumber(List<Integer> list, int number) {
@@ -62,13 +69,13 @@ public class LineNumberFinder {
         return nearestNumber;
     }
 
-    private String[] getJavaClassContent(String commit, String javaFileName) {
+    private String[] getJavaClassContent(String commit, String javaFileName, String classFullname) {
         String[] result = null;
 
         git.checkoutCommit(commit);
 
         File root  = new File(git.getLocalPath().toFile().getAbsolutePath());
-        String file = this.findFilePath(root, javaFileName);
+        String file = this.findFilePath(root, javaFileName, classFullname);
         Path filePath = Paths.get(file);
         Charset charset = StandardCharsets.UTF_8;
 
@@ -82,20 +89,20 @@ public class LineNumberFinder {
 
         return result;
     }
-    private String findFilePath(File root, String fileName) {
+    private String findFilePath(File root, String fileName, String classFullname) {
         File[] files = root.listFiles();
 
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    String foundPath = findFilePath(file, fileName);
+                    String foundPath = findFilePath(file, fileName, classFullname);
 
                     if (foundPath != null) {
                         return foundPath;
                     }
                 } else {
-                    if (file.getName().equals(fileName)) {
-                        return file.getAbsolutePath();
+                    if (file.getName().equals(fileName) && this.getPackages(classFullname).stream().allMatch(p -> file.toString().contains(p))) {
+                            return file.getAbsolutePath();
                     }
                 }
             }
@@ -107,5 +114,9 @@ public class LineNumberFinder {
     private String getJavaFileName(String fullName) {
         String[] array = fullName.split("\\.");
         return array[array.length - 1] + ".java";
+    }
+
+    private List<String> getPackages(String fullName) {
+        return Arrays.asList(fullName.split("\\."));
     }
 }

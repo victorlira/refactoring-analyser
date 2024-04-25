@@ -8,29 +8,39 @@ import br.ufpe.cin.ines.model.RefactoringParams;
 import br.ufpe.cin.ines.model.RefactoringResult;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 
 public class RefactoringEngine {
 
 
-    public RefactoringResult run(String repository, String mergeCommit, String className, int line) throws IOException {
+    public RefactoringResult run(String repository, String mergeCommit, String className, int[] leftModifications, int[] rightModifications) throws IOException {
         GitHelper git = new GitHelper(repository);
 
         git.cloneIfNotExists();
 
         LineNumberFinder lineFinder = new LineNumberFinder(git);
 
+        List<Integer> allOriginalLines = new ArrayList<>();
+        for (int l : leftModifications) { allOriginalLines.add(l); }
+        for (int l : rightModifications) { allOriginalLines.add(l); }
+
+        List<Integer> leftLines = new ArrayList<>();
         String leftCommit = git.getLeftCommit(mergeCommit);
-        int leftLineNumber = lineFinder.find(mergeCommit, leftCommit, className, line);
+        allOriginalLines.forEach(line -> leftLines.add(lineFinder.find(mergeCommit, leftCommit, className, line)));
 
         String rightCommit = git.getRightCommit(mergeCommit);
-        int rightLineNumber = lineFinder.find(mergeCommit, rightCommit, className, line);
+
+        List<Integer> rightLines = new ArrayList<>();
+        allOriginalLines.forEach(line -> rightLines.add(lineFinder.find(mergeCommit, rightCommit, className, line)));
 
         String baseCommit = git.getBaseCommit(leftCommit, rightCommit);
 
         RefactoringFinder[] finders =  {
-                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), mergeCommit, mergeCommit, className, leftLineNumber)),
-                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, leftLineNumber)),
-                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, rightLineNumber)),
+                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), mergeCommit, mergeCommit, className, allOriginalLines)),
+                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, leftLines)),
+                new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, rightLines)),
                 //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, line)),
                 //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, line))
         };

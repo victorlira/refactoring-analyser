@@ -28,11 +28,14 @@ public class RefDiffAdapter extends RefactoringFinder {
 
         File repo = refDiffJava.cloneGitRepository(new File(GitHelper.BASE_FOLDER, this.getParams().getLocalPath().toString()), this.getParams().getRepositoryUrl());
 
-        CstDiff diff = refDiffJava.computeDiffForCommit(repo, this.getParams().getFinalCommit());
-        System.out.println("Executing refdiff for commit: " + this.getParams().getFinalCommit());
-        for (Relationship rel : diff.getRefactoringRelationships()) {
-            System.out.println(rel.getStandardDescription());
-        }
+        try {
+            CstDiff diff = refDiffJava.computeDiffForCommit(repo, this.getParams().getFinalCommit());
+            for (Relationship rel : diff.getRefactoringRelationships()) {
+                if (rel.getNodeBefore().getLocalName().equals(this.getParams().getClassname())) {
+                    result.setRefactoring(true);
+                }
+            }
+        } catch (RuntimeException rex ) {  }
 
         return result;
     }

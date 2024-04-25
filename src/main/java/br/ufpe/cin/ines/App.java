@@ -25,7 +25,7 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
-        /*String COMMA_DELIMITER = ",";
+        String COMMA_DELIMITER = ",";
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("/home/victorlira/Documents/params.csv"))) {
             String lineText = br.readLine();
@@ -37,16 +37,20 @@ public class App
                 String mergeCommit = values[2];
                 String className = values[3];
                 int line = Integer.parseInt(values[4]);
+                int[] left_modifications = readArray(values[5]);
+                int[] right_modifications = readArray(values[6]);
 
-                if (!id.equals("87")) {
+                /*if (!id.equals("68")) {
                     continue;
-                }
+                }*/
+
+                System.out.println("RUNNING SCENARIO: " + id);
                 RefactoringEngine engine = new RefactoringEngine();
-                RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , line);
+                RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , left_modifications, right_modifications);
 
                 System.out.println("ID: " + id + ", IS REFACTORING: " + result.isRefactoring());
             }
-        }*/
+        }
 
         /*String repositoryUrl = "https://github.com/cucumber/cucumber-jvm.git";
         String mergeCommit = "4505c156b6267c1b760deec570ddbfe047b42aa9";
@@ -58,7 +62,7 @@ public class App
         String className = "com.squareup.okhttp.internal.bytes.GzipSource";
         int line = 138;*/
 
-        String id = "48";
+        /*String id = "48";
         String repositoryUrl = "https://github.com/richardwilly98/elasticsearch-river-mongodb.git";
         String mergeCommit = "6b6ce8e851c6613213c4508c3f277a80649e0c7b";
         String className = "org.elasticsearch.river.mongodb.Indexer";
@@ -67,7 +71,16 @@ public class App
         RefactoringEngine engine = new RefactoringEngine();
         RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , line);
 
-        System.out.println("ID: " + id + ", IS REFACTORING: " + result.isRefactoring());
+        System.out.println("ID: " + id + ", IS REFACTORING: " + result.isRefactoring());*/
+    }
+
+    private static int[] readArray(String text) {
+        return Arrays.stream(text
+                .replaceAll("\\[", "")
+                .replaceAll("\\]", "")
+                .split(";"))
+                .mapToInt(t -> Integer.parseInt(t.trim()))
+                .toArray();
     }
 }
 

@@ -62,6 +62,7 @@ public class GitHelper {
     }
 
     public void checkoutCommit(String commit) {
+        //this.executeCommand("git", "reset", "--hard");
         this.executeCommand("git", "checkout", commit);
     }
 

@@ -3,6 +3,7 @@ package br.ufpe.cin.ines.model;
 import br.ufpe.cin.ines.engine.RefactoringFinder;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class RefactoringParams {
 
@@ -16,15 +17,15 @@ public class RefactoringParams {
 
     private final String classname;
 
-    private final int line;
+    private final List<Integer> lines;
 
-    public RefactoringParams(String repositoryUrl, Path localPath, String initialCommit, String finalCommit, String classname, int line) {
+    public RefactoringParams(String repositoryUrl, Path localPath, String initialCommit, String finalCommit, String classname, List<Integer> lines) {
         this.repositoryUrl = repositoryUrl;
         this.localPath = localPath;
         this.initialCommit = initialCommit;
         this.finalCommit = finalCommit;
         this.classname = classname;
-        this.line = line;
+        this.lines = lines;
     }
     public String getRepositoryUrl() {
         return repositoryUrl;
@@ -46,7 +47,7 @@ public class RefactoringParams {
         return classname;
     }
 
-    public int getLine() {
-        return line;
+    public List<Integer> getLine() {
+        return lines;
     }
 }

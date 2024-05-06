@@ -9,6 +9,7 @@ import br.ufpe.cin.ines.model.RefactoringResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -28,12 +29,12 @@ public class RefactoringEngine {
 
         List<Integer> leftLines = new ArrayList<>();
         String leftCommit = git.getLeftCommit(mergeCommit);
-        allOriginalLines.forEach(line -> leftLines.add(lineFinder.find(mergeCommit, leftCommit, className, line)));
+        Arrays.stream(leftModifications).forEach(line -> leftLines.add(lineFinder.find(mergeCommit, leftCommit, className, line)));
 
         String rightCommit = git.getRightCommit(mergeCommit);
 
         List<Integer> rightLines = new ArrayList<>();
-        allOriginalLines.forEach(line -> rightLines.add(lineFinder.find(mergeCommit, rightCommit, className, line)));
+        Arrays.stream(rightModifications).forEach(line -> rightLines.add(lineFinder.find(mergeCommit, rightCommit, className, line)));
 
         String baseCommit = git.getBaseCommit(leftCommit, rightCommit);
 
@@ -41,8 +42,8 @@ public class RefactoringEngine {
                 new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), mergeCommit, mergeCommit, className, allOriginalLines)),
                 new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, leftLines)),
                 new RefactoringMinerAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, rightLines)),
-                //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, line)),
-                //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, line))
+                //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, leftCommit, className, leftLines)),
+                //new RefDiffAdapter(new RefactoringParams(repository, git.getLocalPath(), baseCommit, rightCommit, className, rightLines))
         };
 
         return this.seekRefactorings(finders);

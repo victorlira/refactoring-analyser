@@ -47,6 +47,7 @@ public class RefactoringMinerAdapter extends RefactoringFinder {
                                     .flatMap(ref -> ref.rightSide().stream())
                                     .forEach(ref -> {
                                         if (getParams().getLine().stream().anyMatch(line -> line >= ref.getStartLine() && line <= ref.getEndLine())) {
+                                            result.setDescription(ref.toString());
                                             result.setRefactoring(true);
                                         }
                                     });
@@ -62,6 +63,7 @@ public class RefactoringMinerAdapter extends RefactoringFinder {
                                     .flatMap(ref -> ref.rightSide().stream())
                                     .forEach(ref -> {
                                         if (getParams().getLine().stream().anyMatch(line -> line >= ref.getStartLine() && line <= ref.getEndLine())) {
+                                            result.setDescription(ref.toString());
                                             result.setRefactoring(true);
                                         }
                                     });

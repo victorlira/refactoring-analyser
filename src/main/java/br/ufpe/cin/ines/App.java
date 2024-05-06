@@ -27,7 +27,7 @@ public class App
     {
         String COMMA_DELIMITER = ",";
         List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("/home/victorlira/Documents/params.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("/home/victorlira/Documents/input-refactoring.csv"))) {
             String lineText = br.readLine();
             while ((lineText = br.readLine()) != null) {
                 String[] values = lineText.split(COMMA_DELIMITER);
@@ -36,19 +36,26 @@ public class App
                 String repositoryUrl = values[1];
                 String mergeCommit = values[2];
                 String className = values[3];
-                int line = Integer.parseInt(values[4]);
-                int[] left_modifications = readArray(values[5]);
-                int[] right_modifications = readArray(values[6]);
+                int[] left_modifications = readArray(values[4]);
+                int[] right_modifications = readArray(values[5]);
 
-                /*if (!id.equals("68")) {
+                if (Integer.parseInt(id) < 79) {
                     continue;
-                }*/
+                }
+                try {
+                    System.out.println("==========================================");
+                    System.out.println("RUNNING ID: " + id);
 
-                System.out.println("RUNNING SCENARIO: " + id);
-                RefactoringEngine engine = new RefactoringEngine();
-                RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , left_modifications, right_modifications);
-
-                System.out.println("ID: " + id + ", IS REFACTORING: " + result.isRefactoring());
+                    RefactoringEngine engine = new RefactoringEngine();
+                    RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className, left_modifications, right_modifications);
+                    System.out.println("Is refactoring: " + id + ": " + result.isRefactoring());
+                    if (result.isRefactoring()) {
+                        //System.out.println(result.getDescription());
+                    }
+                } catch (Exception ex) {
+                    //ex.printStackTrace();
+                    System.out.println("Error in ID:" + id);
+                }
             }
         }
 

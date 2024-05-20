@@ -3,8 +3,7 @@ package br.ufpe.cin.ines.engine.refactoringminer;
 import br.ufpe.cin.ines.engine.RefactoringFinder;
 import br.ufpe.cin.ines.model.RefactoringParams;
 import br.ufpe.cin.ines.model.RefactoringResult;
-import gr.uom.java.xmi.diff.CodeRange;
-import org.refactoringminer.RefactoringMiner;
+import br.ufpe.cin.ines.model.ResultItem;
 import org.refactoringminer.api.GitHistoryRefactoringMiner;
 import org.refactoringminer.api.GitService;
 import org.refactoringminer.api.Refactoring;
@@ -13,12 +12,9 @@ import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 import org.refactoringminer.util.GitServiceImpl;
 
 import org.eclipse.jgit.lib.Repository;
-import refdiff.core.RefDiff;
-import refdiff.parsers.java.JavaPlugin;
 
-import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class RefactoringMinerAdapter extends RefactoringFinder {
 
@@ -38,41 +34,33 @@ public class RefactoringMinerAdapter extends RefactoringFinder {
                 GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
 
                 if (this.getParams().getInitialCommit().equals(this.getParams().getFinalCommit())) {
-                    miner.detectAtCommit(repo, this.getParams().getFinalCommit(), new RefactoringHandler() {
-                        @Override
-                        public void handle(String commitId, List<Refactoring> refactorings) {
-                            refactorings
-                                    .stream()
-                                    .filter(ref -> ref.rightSide().stream().anyMatch(i -> i.getFilePath().contains(classFilePath)))
-                                    .flatMap(ref -> ref.rightSide().stream())
-                                    .forEach(ref -> {
-                                        if (getParams().getLine().stream().anyMatch(line -> line >= ref.getStartLine() && line <= ref.getEndLine())) {
-                                            result.setDescription(ref.toString());
-                                            result.setRefactoring(true);
-                                        }
-                                    });
-                        }
-                    });
+                    miner.detectAtCommit(repo, this.getParams().getFinalCommit(), getRefactoringHandler(classFilePath, result));
                 } else {
-                    miner.detectBetweenCommits(repo, this.getParams().getInitialCommit(), this.getParams().getFinalCommit(), new RefactoringHandler() {
-                        @Override
-                        public void handle(String commitId, List<Refactoring> refactorings) {
-                            refactorings
-                                    .stream()
-                                    .filter(ref -> ref.rightSide().stream().anyMatch(i -> i.getFilePath().contains(classFilePath)))
-                                    .flatMap(ref -> ref.rightSide().stream())
-                                    .forEach(ref -> {
-                                        if (getParams().getLine().stream().anyMatch(line -> line >= ref.getStartLine() && line <= ref.getEndLine())) {
-                                            result.setDescription(ref.toString());
-                                            result.setRefactoring(true);
-                                        }
-                                    });
-                        }
-                    });
+                    miner.detectBetweenCommits(repo, this.getParams().getInitialCommit(), this.getParams().getFinalCommit(), getRefactoringHandler(classFilePath, result));
                 }
             }
         } catch (Exception ex) { ex.printStackTrace(); }
 
         return result;
+    }
+
+    private RefactoringHandler getRefactoringHandler(String classFilePath, RefactoringResult result) {
+        return new RefactoringHandler() {
+            @Override
+            public void handle(String commitId, List<Refactoring> refactorings) {
+                refactorings
+                        .stream()
+                        .filter(ref -> ref.rightSide().stream().anyMatch(i -> i.getFilePath().contains(classFilePath)))
+                        .flatMap(ref -> ref.rightSide().stream())
+                        .forEach(ref -> {
+                            getParams()
+                                    .getLines()
+                                    .keySet()
+                                    .stream()
+                                    .filter(mergeLine -> getParams().getLines().get(mergeLine) >= ref.getStartLine() && getParams().getLines().get(mergeLine) <= ref.getEndLine())
+                                    .forEach(mergeLine -> result.addItem(new ResultItem(mergeLine, ref.toString(), getParams().getCommit())));
+                        });
+            }
+        };
     }
 }

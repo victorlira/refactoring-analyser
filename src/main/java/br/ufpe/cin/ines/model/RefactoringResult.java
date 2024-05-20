@@ -1,23 +1,27 @@
 package br.ufpe.cin.ines.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RefactoringResult {
 
+    private final List<ResultItem> items;
     private boolean isRefactoring;
     private String description;
 
+    public RefactoringResult() {
+        this.items = new ArrayList<>();
+    }
+
+    public void addItem(ResultItem item) {
+        this.items.add(item);
+    }
+
     public boolean isRefactoring() {
-        return isRefactoring;
+        return !this.items.isEmpty();
     }
 
-    public void setRefactoring(boolean refactoring) {
-        isRefactoring = refactoring;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public List<ResultItem> getItems() {
+        return items;
     }
 }

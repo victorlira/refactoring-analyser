@@ -2,7 +2,9 @@ package br.ufpe.cin.ines;
 
 import br.ufpe.cin.ines.engine.RefactoringEngine;
 import br.ufpe.cin.ines.git.GitHelper;
+import br.ufpe.cin.ines.model.CommitEnum;
 import br.ufpe.cin.ines.model.RefactoringResult;
+import br.ufpe.cin.ines.parser.LogParser;
 import refdiff.core.RefDiff;
 import refdiff.core.diff.CstDiff;
 import refdiff.core.diff.Relationship;
@@ -25,6 +27,10 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
+        /*String filePath = "/home/victorlira/Documents/results/results/execution-1/outConsole.txt";
+        LogParser parser = new LogParser();
+        parser.parse(filePath);
+        System.exit(0);*/
         String COMMA_DELIMITER = ",";
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("/home/victorlira/Documents/input-refactoring.csv"))) {
@@ -39,9 +45,9 @@ public class App
                 int[] left_modifications = readArray(values[4]);
                 int[] right_modifications = readArray(values[5]);
 
-                if (Integer.parseInt(id) < 79) {
+                /*if (Integer.parseInt(id) < 79) {
                     continue;
-                }
+                }*/
                 try {
                     System.out.println("==========================================");
                     System.out.println("RUNNING ID: " + id);
@@ -50,8 +56,18 @@ public class App
                     RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className, left_modifications, right_modifications);
                     System.out.println("Is refactoring: " + id + ": " + result.isRefactoring());
                     if (result.isRefactoring()) {
+                        result.getItems().forEach(item -> System.out.println(item.getCommit() + ": " + item.getLine()));
                         //System.out.println(result.getDescription());
                     }
+                    System.out.print("Left: ");
+                    printArray(Arrays.stream(left_modifications)
+                            .filter(line -> result.getItems().stream().noneMatch(resultItem -> resultItem.getCommit() == CommitEnum.LEFT && resultItem.getLine() == line))
+                            .toArray());
+
+                    System.out.print("Right: ");
+                    printArray(Arrays.stream(right_modifications)
+                            .filter(line -> result.getItems().stream().noneMatch(resultItem -> resultItem.getCommit() == CommitEnum.RIGHT && resultItem.getLine() == line))
+                            .toArray());
                 } catch (Exception ex) {
                     //ex.printStackTrace();
                     System.out.println("Error in ID:" + id);
@@ -79,6 +95,16 @@ public class App
         RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , line);
 
         System.out.println("ID: " + id + ", IS REFACTORING: " + result.isRefactoring());*/
+    }
+
+    private static void printArray(int[] x) {
+        String s = "[";
+        for (int i : x) {
+            s += i + ", ";
+        }
+        s += "]";
+        s = s.replace(", ]", "]");
+        System.out.println(s);
     }
 
     private static int[] readArray(String text) {

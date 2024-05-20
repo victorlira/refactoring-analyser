@@ -32,7 +32,7 @@ public class RefDiffAdapter extends RefactoringFinder {
             CstDiff diff = refDiffJava.computeDiffForCommit(repo, this.getParams().getFinalCommit());
             for (Relationship rel : diff.getRefactoringRelationships()) {
                 if (rel.getNodeBefore().getLocalName().equals(this.getParams().getClassname())) {
-                    result.setRefactoring(true);
+                    //result.setRefactoring(true);
                 }
             }
         } catch (RuntimeException rex ) {  }

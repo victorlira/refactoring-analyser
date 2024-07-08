@@ -37,6 +37,11 @@ public class GitHelper {
         }
     }
 
+    public void clearRepository(String mergeCommit) {
+        this.executeCommand("git", "checkout", mergeCommit);
+        //this.executeCommand("git", "reset", "--hard");
+    }
+
     public String getBaseCommit(String leftCommit, String rightCommit) {
         String shortLeftHash = leftCommit.substring(0, 7);
         String shortRightHash = rightCommit.substring(0, 7);
@@ -59,6 +64,13 @@ public class GitHelper {
 
     private void cloneRepository() {
         this.executeCommand("git", "clone", this.repositoryUrl, this.localPath.getFileName().toString());
+    }
+
+    public String getSquashedCommit(String baseCommit, String finalCommit) {
+        this.executeCommand("git", "checkout", finalCommit);
+        this.executeCommand("git", "reset", "--soft", baseCommit);
+        this.executeCommand("git", "commit", "-m", "\"squash\"");
+        return this.executeCommand("git", "rev-parse", "HEAD");
     }
 
     public void checkoutCommit(String commit) {

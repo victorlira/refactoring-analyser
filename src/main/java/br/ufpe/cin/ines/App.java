@@ -5,6 +5,12 @@ import br.ufpe.cin.ines.git.GitHelper;
 import br.ufpe.cin.ines.model.CommitEnum;
 import br.ufpe.cin.ines.model.RefactoringResult;
 import br.ufpe.cin.ines.parser.LogParser;
+import org.refactoringminer.api.GitHistoryRefactoringMiner;
+import org.refactoringminer.api.GitService;
+import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringHandler;
+import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
+import org.refactoringminer.util.GitServiceImpl;
 import refdiff.core.RefDiff;
 import refdiff.core.diff.CstDiff;
 import refdiff.core.diff.Relationship;
@@ -18,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
+import org.eclipse.jgit.lib.Repository;
 /**
  * Hello world!
  *
@@ -27,6 +33,29 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
+        GitService gitService = new GitServiceImpl();
+        GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
+
+        Repository 	repo = gitService.cloneIfNotExists(
+                //"tmp/repos/dropwizard",
+                "tmp/repos/tes-refactorings2",
+                "https://github.com/victorlira/tes-refactorings.git");
+        //"https://github.com/dropwizard/dropwizard.git");
+
+
+        miner.detectAtCommit(repo, "398cfb55053bcaf90fd1b46801e8d18d1df8420a", new RefactoringHandler() {
+            @Override
+            public void handle(String commitId, List<Refactoring> refactorings) {
+                System.out.println("Refactorings at " + commitId);
+                for (Refactoring ref : refactorings) {
+                    System.out.println(ref.toString());
+                }
+                if (refactorings.size() == 0) {
+                    System.out.println("No refactorings found");
+                }
+            }
+        });
+
         /*String filePath = "/home/victorlira/Documents/results/results/execution-1/outConsole.txt";
         LogParser parser = new LogParser();
         parser.parse(filePath);

@@ -3,5 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/projects/cucumber-cucumber-jvm.git" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tmp/repos/tes-refactorings2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tmp/repos/tes-refactorings4" vcs="Git" />
   </component>
 </project>

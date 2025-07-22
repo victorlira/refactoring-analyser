@@ -16,4 +16,6 @@ public abstract class RefactoringFinder {
     public RefactoringParams getParams() {
         return params;
     }
+
+    public abstract String getToolName();
 }

@@ -39,4 +39,9 @@ public class RefDiffAdapter extends RefactoringFinder {
 
         return result;
     }
+
+    @Override
+    public String getToolName() {
+        return "RefDiff";
+    }
 }

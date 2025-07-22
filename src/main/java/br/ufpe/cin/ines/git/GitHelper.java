@@ -96,13 +96,13 @@ public class GitHelper {
 
             InputStream errorStream = process.getErrorStream();
             InputStreamReader errorStreamReader = new InputStreamReader(errorStream);
-            BufferedReader errorBufferedReader = new BufferedReader(errorStreamReader);
+            //BufferedReader errorBufferedReader = new BufferedReader(errorStreamReader);
 
             String line;
-            StringBuilder error = new StringBuilder();
+            /*StringBuilder error = new StringBuilder();
             while ((line = errorBufferedReader.readLine()) != null) {
                 error.append(line).append("\n");
-            }
+            }*/
 
             StringBuilder result = new StringBuilder();
             while ((line = bufferedReader.readLine()) != null) {
@@ -118,7 +118,7 @@ public class GitHelper {
                 for (String element : command) {
                     joiner.add(element);
                 }
-                throw new RuntimeException("Error while executing command: " + joiner.toString() + ", Error: " + error);
+                throw new RuntimeException("Error while executing command: " + joiner.toString() );//+ ", Error: " + error);
             }
 
         } catch (IOException | InterruptedException e) {

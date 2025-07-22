@@ -4,7 +4,9 @@ import br.ufpe.cin.ines.engine.RefactoringEngine;
 import br.ufpe.cin.ines.git.GitHelper;
 import br.ufpe.cin.ines.model.CommitEnum;
 import br.ufpe.cin.ines.model.RefactoringResult;
+import br.ufpe.cin.ines.model.ResultItem;
 import br.ufpe.cin.ines.parser.LogParser;
+import br.ufpe.cin.ines.util.RefactoringResultJsonExporter;
 import org.refactoringminer.api.GitHistoryRefactoringMiner;
 import org.refactoringminer.api.GitService;
 import org.refactoringminer.api.Refactoring;
@@ -16,57 +18,26 @@ import refdiff.core.diff.CstDiff;
 import refdiff.core.diff.Relationship;
 import refdiff.parsers.java.JavaPlugin;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.eclipse.jgit.lib.Repository;
-/**
- * Hello world!
- *
- */
 public class App 
 {
-    public static void main( String[] args ) throws Exception
-    {
-        GitService gitService = new GitServiceImpl();
-        GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
-
-        Repository 	repo = gitService.cloneIfNotExists(
-                //"tmp/repos/dropwizard",
-                "tmp/repos/tes-refactorings2",
-                "https://github.com/victorlira/tes-refactorings.git");
-        //"https://github.com/dropwizard/dropwizard.git");
-
-
-        miner.detectAtCommit(repo, "398cfb55053bcaf90fd1b46801e8d18d1df8420a", new RefactoringHandler() {
-            @Override
-            public void handle(String commitId, List<Refactoring> refactorings) {
-                System.out.println("Refactorings at " + commitId);
-                for (Refactoring ref : refactorings) {
-                    System.out.println(ref.toString());
-                }
-                if (refactorings.size() == 0) {
-                    System.out.println("No refactorings found");
-                }
-            }
-        });
-
-        /*String filePath = "/home/victorlira/Documents/results/results/execution-1/outConsole.txt";
-        LogParser parser = new LogParser();
-        parser.parse(filePath);
-        System.exit(0);*/
+    public static void main(String[] args) throws Exception {
         String COMMA_DELIMITER = ",";
-        List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("/home/victorlira/Documents/input-refactoring.csv"))) {
+        List<Long> executionTimes = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader("/home/victorlira/Documents/experiment/miningframework/input-refactoring.csv"))) {
             String lineText = br.readLine();
             while ((lineText = br.readLine()) != null) {
                 String[] values = lineText.split(COMMA_DELIMITER);
-
                 String id = values[0];
                 String repositoryUrl = values[1];
                 String mergeCommit = values[2];
@@ -74,56 +45,63 @@ public class App
                 int[] left_modifications = readArray(values[4]);
                 int[] right_modifications = readArray(values[5]);
 
-                /*if (Integer.parseInt(id) < 79) {
-                    continue;
-                }*/
                 try {
                     System.out.println("==========================================");
                     System.out.println("RUNNING ID: " + id);
 
                     RefactoringEngine engine = new RefactoringEngine();
-                    RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className, left_modifications, right_modifications);
-                    System.out.println("Is refactoring: " + id + ": " + result.isRefactoring());
-                    if (result.isRefactoring()) {
-                        result.getItems().forEach(item -> System.out.println(item.getCommit() + ": " + item.getLine()));
-                        //System.out.println(result.getDescription());
-                    }
-                    System.out.print("Left: ");
-                    printArray(Arrays.stream(left_modifications)
-                            .filter(line -> result.getItems().stream().noneMatch(resultItem -> resultItem.getCommit() == CommitEnum.LEFT && resultItem.getLine() == line))
-                            .toArray());
+                    long startTime = System.currentTimeMillis();
 
-                    System.out.print("Right: ");
-                    printArray(Arrays.stream(right_modifications)
-                            .filter(line -> result.getItems().stream().noneMatch(resultItem -> resultItem.getCommit() == CommitEnum.RIGHT && resultItem.getLine() == line))
-                            .toArray());
+                    RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className, left_modifications, right_modifications);
+
+                    Path saida = Paths.get("/home/victorlira/Documents/experiment/miningframework/victor-results/"+id, "refactor-result.json");
+
+                    //RefactoringResultJsonExporter.exportToJson(result, className, saida);
+
+                    //printBranchAndLine(result);
+
+                    long endTime = System.currentTimeMillis();
+                    long duration = endTime - startTime;
+
+                    System.out.println("Execution time (ms) for ID " + id + ": " + duration);
+
+                    executionTimes.add(duration);
+                    ids.add(id);
+
+                    System.out.println("ID: " + id + " PROCESSED.");
                 } catch (Exception ex) {
-                    //ex.printStackTrace();
                     System.out.println("Error in ID:" + id);
+                    System.out.println(ex.getMessage());
                 }
             }
         }
 
-        /*String repositoryUrl = "https://github.com/cucumber/cucumber-jvm.git";
-        String mergeCommit = "4505c156b6267c1b760deec570ddbfe047b42aa9";
-        String className = "cuke4duke.internal.java.JavaLanguage";
-        int line = 36;;
+        if (!executionTimes.isEmpty()) {
+            System.out.println("\n===== Execution Times Summary =====");
+            for (int i = 0; i < executionTimes.size(); i++) {
+                System.out.println("ID: " + ids.get(i) + ", Time: " + executionTimes.get(i) + " ms");
+            }
 
-        String repositoryUrl = "https://github.com/square/okhttp.git";
-        String mergeCommit = "1151c9853ccc3c9c3211c613b9b845b925f8c6a6";
-        String className = "com.squareup.okhttp.internal.bytes.GzipSource";
-        int line = 138;*/
+            long max = executionTimes.stream().mapToLong(Long::longValue).max().getAsLong();
+            long min = executionTimes.stream().mapToLong(Long::longValue).min().getAsLong();
+            double avg = executionTimes.stream().mapToLong(Long::longValue).average().getAsDouble();
 
-        /*String id = "48";
-        String repositoryUrl = "https://github.com/richardwilly98/elasticsearch-river-mongodb.git";
-        String mergeCommit = "6b6ce8e851c6613213c4508c3f277a80649e0c7b";
-        String className = "org.elasticsearch.river.mongodb.Indexer";
-        int line = 287;
+            System.out.println("Max time: " + max + " ms");
+            System.out.println("Min time: " + min + " ms");
+            System.out.println("Avg time: " + avg + " ms");
 
-        RefactoringEngine engine = new RefactoringEngine();
-        RefactoringResult result = engine.run(repositoryUrl, mergeCommit, className , line);
+            // Escrever CSV
+            try (PrintWriter pw = new PrintWriter(new FileWriter("execution_times.csv"))) {
+                pw.println("id,execution-time");
+                for (int i = 0; i < ids.size(); i++) {
+                    pw.println(ids.get(i) + "," + executionTimes.get(i));
+                }
+            }
 
-        System.out.println("ID: " + id + ", IS REFACTORING: " + result.isRefactoring());*/
+            System.out.println("execution_times.csv saved.");
+        }
+
+        System.out.println("Experiment executed.");
     }
 
     private static void printArray(int[] x) {
@@ -143,6 +121,23 @@ public class App
                 .split(";"))
                 .mapToInt(t -> Integer.parseInt(t.trim()))
                 .toArray();
+    }
+
+    public static void printBranchAndLine(RefactoringResult refactoringResult) {
+        for (ResultItem item : refactoringResult.getItems()) {
+            String branch = mapCommitToBranch(item.getCommit());
+            System.out.print(branch + ": " + item.getLine()+ ", ");
+        }
+        System.out.println();
+    }
+
+    // Maps the commit enum to "L", "R", or "B"
+    private static String mapCommitToBranch(CommitEnum commit) {
+        switch (commit) {
+            case LEFT:  return "L";
+            case RIGHT: return "R";
+            default:    return "B";
+        }
     }
 }
 

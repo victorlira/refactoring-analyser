@@ -7,6 +7,11 @@ public class StringMatch
     public static boolean isMatch(String s1, String s2) {
         return jaroWinkler(s1, s2) >= MATCH_PERCENTAGE;
     }
+
+    public static double getMatch(String s1, String s2) {
+        return jaroWinkler(s1, s2);
+    }
+
     static double jaroDistance(String s1, String s2)
     {
         // If the strings are equal

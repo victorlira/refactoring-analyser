@@ -21,8 +21,6 @@ public class LineNumberFinder {
     }
 
     public int find(String originalCommit, String searchingCommit, String fileName, int originalLineNumber) {
-        int line = 0;
-
         String javaFile = this.getJavaFileName(fileName);
         String[] originalFileContent = this.getJavaClassContent(originalCommit, javaFile, fileName);
         String originalLineContent = originalFileContent[originalLineNumber - 1];
@@ -34,39 +32,64 @@ public class LineNumberFinder {
     private int findLine(String[] fileContent, String lineContent, int originalLineNumber) {
         int result = -1;
 
+        Map<Integer, Double> linesToMatchPertecentage = new Hashtable<>();
         List<Integer> lines = new ArrayList<>();
 
         lineContent = lineContent.trim();
         for (int i = 1; i <= fileContent.length; i++) {
             if (StringMatch.isMatch(fileContent[i - 1].trim(), lineContent)) {
                 lines.add(i);
+                linesToMatchPertecentage.put(i, StringMatch.getMatch(fileContent[i - 1].trim(), lineContent));
             }
         }
 
         if (!lines.isEmpty()) {
-            result = this.findNearestNumber(lines, originalLineNumber);
+            result = this.findNearestNumber(linesToMatchPertecentage, originalLineNumber);
         }
 
         return result;
     }
 
-    public int findNearestNumber(List<Integer> list, int number) {
-        if (list == null || list.isEmpty()) {
-            throw new IllegalArgumentException("List cannot be null");
+    public int findNearestNumber(Map<Integer, Double> linesToMatchPercentage, int number) {
+        if (linesToMatchPercentage == null || linesToMatchPercentage.isEmpty()) {
+            throw new IllegalArgumentException("Map cannot be null or empty");
         }
 
-        int nearestNumber = list.get(0);
-        int minimalDifference = Math.abs(number - nearestNumber);
+        int bestLine = 0;
+        double bestPercentage = -1.0;
+        int bestDistance = Integer.MAX_VALUE;
+        boolean first = true;
 
-        for (int item : list) {
-            int difference = Math.abs(number - item);
-            if (difference < minimalDifference) {
-                minimalDifference = difference;
-                nearestNumber = item;
+        for (Map.Entry<Integer, Double> entry : linesToMatchPercentage.entrySet()) {
+            int line = entry.getKey();
+            double percentage = entry.getValue();
+
+            if (percentage < 0.0 || percentage > 100.0) {
+                throw new IllegalArgumentException("Percentage must be between 0 and 100 (inclusive)");
+            }
+
+            int distance = Math.abs(number - line);
+
+            if (first) {
+                bestLine = line;
+                bestPercentage = percentage;
+                bestDistance = distance;
+                first = false;
+                continue;
+            }
+
+
+            if (percentage > bestPercentage) {
+                bestLine = line;
+                bestPercentage = percentage;
+                bestDistance = distance;
+            } else if (percentage == bestPercentage && distance < bestDistance) {
+                bestLine = line;
+                bestDistance = distance;
             }
         }
 
-        return nearestNumber;
+        return bestLine;
     }
 
     private String[] getJavaClassContent(String commit, String javaFileName, String classFullname) {
